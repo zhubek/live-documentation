@@ -1,0 +1,50 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {GET,PUT} from '../app/api/model/route.js';
+import {POST,DELETE} from '../app/api/session/route.js';
+import {openStore} from './store.js';
+import {seed} from '../src/seed.js';
+import {GET as schema} from '../app/api/schema/route.js';
+import {POST as validate} from '../app/api/model/validate/route.js';
+import {studioClient} from '../studio-client.mjs';
+test('API authenticates, enforces origin and revision, and preserves model data',async()=>{
+ process.env.STUDIO_PASSWORD='fixture-password';process.env.STUDIO_SESSION_SECRET='fixture-secret';process.env.STUDIO_ORIGIN='http://localhost:5185';
+ globalThis.__studioStore=openStore(':memory:');
+ const req=(path,method='GET',body,cookie,origin='http://localhost:5185')=>new Request('http://localhost:5185/api/'+path,{method,headers:{origin,'content-type':'application/json',...(cookie?{cookie}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ try{
+  assert.equal((await GET(req('model'))).status,401);
+  assert.equal((await schema(req('schema'))).status,401);
+  assert.equal((await validate(req('model/validate','POST',{model:seed}))).status,401);
+  assert.equal((await PUT(req('model','PUT',{model:seed,revision:0}))).status,401);
+  assert.equal((await POST(req('session','POST',{password:'wrong'}))).status,401);
+  const login=await POST(req('session','POST',{password:'fixture-password'}));
+  assert.equal(login.status,200);const cookie=login.headers.get('set-cookie').split(';')[0];
+  assert.equal((await GET(req('model','GET',null,cookie))).status,200);
+  assert.equal((await schema(req('schema','GET',null,cookie))).status,200);
+  assert.equal((await validate(req('model/validate','POST',{model:seed},cookie,'http://evil.example'))).status,403);
+  assert.deepEqual(await(await validate(req('model/validate','POST',{model:seed},cookie))).json(),{valid:true});
+  const invalid=structuredClone(seed);invalid.objects[0].notes=123;
+  const rejected=await validate(req('model/validate','POST',{model:invalid},cookie));assert.equal(rejected.status,400);
+  assert.match((await rejected.json()).error,/notes.*string/);
+  assert.equal((await PUT(req('model','PUT',{model:seed,revision:0},cookie,'http://evil.example'))).status,403);
+  assert.equal((await PUT(req('model','PUT',{model:seed,revision:0},cookie))).status,200);
+  assert.equal((await PUT(req('model','PUT',{model:seed,revision:0},cookie))).status,409);
+  assert.equal((await PUT(req('model','PUT',{model:{version:1},revision:1},cookie))).status,400);
+  assert.equal((await PUT(req('model','PUT',{model:invalid,revision:1},cookie))).status,400);
+  const saved=await (await GET(req('model','GET',null,cookie))).json();assert.deepEqual(saved.model,seed);assert.equal(saved.revision,1);
+  const client=await studioClient({url:'http://localhost:5185',password:'fixture-password',fetcher:(url,options)=>{
+    const request=new Request(url,options);const path=new URL(url).pathname;
+    if(path==='/api/session')return POST(request);
+    if(path==='/api/schema')return schema(request);
+    if(path==='/api/model/validate')return validate(request);
+    return options.method==='PUT'?PUT(request):GET(request);
+  }});
+  assert.equal((await client('/api/schema')).title,'Fieldwork Studio model');
+  assert.deepEqual(await client('/api/model?revisionOnly=true'),{revision:1,updatedAt:saved.updatedAt});
+  await client('/api/model/validate','POST',{model:seed});
+  assert.equal(globalThis.__studioStore.read('studio').revision,1);
+  assert.equal((await client('/api/model','PUT',{model:seed,revision:1})).revision,2);
+  await assert.rejects(client('/api/model','PUT',{model:seed,revision:1}),/409/);
+  assert.match((await DELETE(req('session','DELETE',null,cookie))).headers.get('set-cookie'),/Max-Age=0/);
+ }finally{globalThis.__studioStore.close();delete globalThis.__studioStore;}
+});

@@ -1,0 +1,339 @@
+{
+  "sourcePath": "apps/api/prisma/schema.prisma",
+  "grouping": "Logical domains, not PostgreSQL schemas",
+  "tables": [
+    {
+      "name": "Project",
+      "domain": "Projects",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "default": "uuid()",
+          "relation": false,
+          "target": null,
+          "attributes": " @id @default(uuid())"
+        },
+        {
+          "name": "organizationId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "color",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "\"sage\"",
+          "relation": false,
+          "target": null,
+          "attributes": " @default(\"sage\")"
+        },
+        {
+          "name": "assignments",
+          "type": "Assignment[]",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": true,
+          "target": "Assignment",
+          "attributes": ""
+        }
+      ],
+      "indexes": [
+        "@@index([organizationId])"
+      ]
+    },
+    {
+      "name": "Assignment",
+      "domain": "Assignments",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "default": "uuid()",
+          "relation": false,
+          "target": null,
+          "attributes": " @id @default(uuid())"
+        },
+        {
+          "name": "organizationId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "projectId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": "",
+          "reference": {
+            "table": "Project",
+            "field": "id"
+          }
+        },
+        {
+          "name": "project",
+          "type": "Project",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": true,
+          "target": "Project",
+          "attributes": " @relation(fields: [projectId], references: [id])"
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "\"\"",
+          "relation": false,
+          "target": null,
+          "attributes": " @default(\"\")"
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "\"OPEN\"",
+          "relation": false,
+          "target": null,
+          "attributes": " @default(\"OPEN\")"
+        },
+        {
+          "name": "priority",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "\"MEDIUM\"",
+          "relation": false,
+          "target": null,
+          "attributes": " @default(\"MEDIUM\")"
+        },
+        {
+          "name": "assigneeId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "default": "now()",
+          "relation": false,
+          "target": null,
+          "attributes": " @default(now())"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "default": "@updatedAt",
+          "relation": false,
+          "target": null,
+          "attributes": " @updatedAt"
+        },
+        {
+          "name": "comments",
+          "type": "Comment[]",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": true,
+          "target": "Comment",
+          "attributes": ""
+        }
+      ],
+      "indexes": [
+        "@@index([organizationId, createdAt])"
+      ]
+    },
+    {
+      "name": "Comment",
+      "domain": "Assignments",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "default": "uuid()",
+          "relation": false,
+          "target": null,
+          "attributes": " @id @default(uuid())"
+        },
+        {
+          "name": "assignmentId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": "",
+          "reference": {
+            "table": "Assignment",
+            "field": "id",
+            "onDelete": "Cascade"
+          }
+        },
+        {
+          "name": "assignment",
+          "type": "Assignment",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": true,
+          "target": "Assignment",
+          "attributes": " @relation(fields: [assignmentId], references: [id], onDelete: Cascade)"
+        },
+        {
+          "name": "authorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "body",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "default": "now()",
+          "relation": false,
+          "target": null,
+          "attributes": " @default(now())"
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "name": "Activity",
+      "domain": "Activity",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "default": "uuid()",
+          "relation": false,
+          "target": null,
+          "attributes": " @id @default(uuid())"
+        },
+        {
+          "name": "organizationId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "actorName",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "message",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "default": "",
+          "relation": false,
+          "target": null,
+          "attributes": ""
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "default": "now()",
+          "relation": false,
+          "target": null,
+          "attributes": " @default(now())"
+        }
+      ],
+      "indexes": [
+        "@@index([organizationId, createdAt])"
+      ]
+    }
+  ]
+}

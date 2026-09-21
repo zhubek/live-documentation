@@ -1,0 +1,25 @@
+{
+  "name": "live-documentation",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 5185",
+    "build": "next build --webpack",
+    "test": "node --test model.test.js server/*.test.js",
+    "start": "next start --hostname 0.0.0.0 --port 5185",
+    "snapshots:refresh": "node build-sources.mjs"
+  },
+  "dependencies": {
+    "@dagrejs/dagre": "^1.1.5",
+    "@xyflow/react": "^12.10.0",
+    "ajv": "^8.20.0",
+    "next": "^16.3.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "description": "Interactive live documentation with diagrams, validated JSON editing, and a Next.js + SQLite backend.",
+  "engines": {
+    "node": ">=24"
+  }
+}

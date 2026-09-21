@@ -1,0 +1,1214 @@
+{
+  "version": 1,
+  "name": "Fieldwork",
+  "objects": [
+    {
+      "id": "member",
+      "kind": "person",
+      "name": "Workspace member",
+      "description": "Plans projects, completes assignments, and discusses work."
+    },
+    {
+      "id": "fieldwork",
+      "kind": "system",
+      "name": "Fieldwork",
+      "description": "A team workspace for projects, assignments, and activity.",
+      "drillTo": "containers"
+    },
+    {
+      "id": "sentry",
+      "kind": "external",
+      "name": "Sentry",
+      "description": "Optional error reporting. Secrets and request bodies are excluded."
+    },
+    {
+      "id": "web",
+      "kind": "application",
+      "name": "Web application",
+      "description": "Routes and feature components. UI capabilities come from the server.",
+      "technology": "Next.js · React",
+      "drillTo": "frontend"
+    },
+    {
+      "id": "api",
+      "kind": "service",
+      "name": "GraphQL API",
+      "description": "Organization-scoped queries and use-cases enforce authorization.",
+      "technology": "NestJS · GraphQL",
+      "drillTo": "components"
+    },
+    {
+      "id": "postgres",
+      "kind": "database",
+      "name": "PostgreSQL",
+      "description": "Business records and activity are written atomically.",
+      "technology": "Prisma",
+      "drillTo": "data"
+    },
+    {
+      "id": "redis",
+      "kind": "database",
+      "name": "Redis",
+      "description": "Optional read cache; transient notifications after commit.",
+      "technology": "Cache · Pub/Sub"
+    },
+    {
+      "id": "resolver",
+      "kind": "component",
+      "name": "Assignments resolver",
+      "description": "Validates mutation input and delegates to use-cases.",
+      "technology": "GraphQL"
+    },
+    {
+      "id": "usecase",
+      "kind": "use-case",
+      "name": "Change assignment status",
+      "description": "Loads a scoped record, checks permissions and state, writes atomically.",
+      "drillTo": "process"
+    },
+    {
+      "id": "policy",
+      "kind": "policy",
+      "name": "Assignment policy",
+      "description": "Record-level authorization. Never imports guards."
+    },
+    {
+      "id": "rules",
+      "kind": "component",
+      "name": "Assignment rules",
+      "description": "Validates business state transitions."
+    },
+    {
+      "id": "query",
+      "kind": "query",
+      "name": "List assignments",
+      "description": "Reads directly through Prisma with organization and permission scope."
+    },
+    {
+      "id": "capabilities",
+      "kind": "component",
+      "name": "Capability resolver",
+      "description": "Derives canComplete and the reason from policies and rules."
+    },
+    {
+      "id": "project",
+      "kind": "entity",
+      "name": "Project",
+      "description": "Organization-owned workspace project.",
+      "fields": "id: String [PK]\norganizationId: String\nname: String\ndescription: String\ncolor: String"
+    },
+    {
+      "id": "assignment",
+      "kind": "entity",
+      "name": "Assignment",
+      "description": "Work item scoped to an organization.",
+      "fields": "id: String [PK]\norganizationId: String\nprojectId: String [FK]\ntitle: String\nstatus: String\nassigneeId: String"
+    },
+    {
+      "id": "comment",
+      "kind": "entity",
+      "name": "Comment",
+      "description": "Read access is scoped through its assignment.",
+      "fields": "id: String [PK]\nassignmentId: String [FK]\nauthorId: String\nbody: String"
+    },
+    {
+      "id": "activity",
+      "kind": "entity",
+      "name": "Activity",
+      "description": "Activity record written with business changes.",
+      "fields": "id: String [PK]\norganizationId: String\nactorName: String\nmessage: String\ncreatedAt: DateTime"
+    },
+    {
+      "id": "page",
+      "kind": "component",
+      "name": "Workspace page",
+      "description": "Assembles the workspace feature."
+    },
+    {
+      "id": "workspace",
+      "kind": "component",
+      "name": "Workspace",
+      "description": "Coordinates queries and refetches on notifications."
+    },
+    {
+      "id": "detail",
+      "kind": "component",
+      "name": "Assignment detail",
+      "description": "Renders the selected assignment and available actions."
+    },
+    {
+      "id": "complete",
+      "kind": "component",
+      "name": "Complete action",
+      "description": "Uses server canComplete; server rechecks mutation authorization.",
+      "drillTo": "process"
+    },
+    {
+      "id": "start",
+      "kind": "event",
+      "name": "Status change requested",
+      "description": "GraphQL mutation input."
+    },
+    {
+      "id": "load",
+      "kind": "task",
+      "name": "Load scoped assignment",
+      "description": "Look up the record inside the actor’s organization."
+    },
+    {
+      "id": "check",
+      "kind": "gateway",
+      "name": "Allowed?",
+      "description": "Policy and domain rules must both allow the change."
+    },
+    {
+      "id": "reject",
+      "kind": "event",
+      "name": "Reject request",
+      "description": "Return an authorization or state error."
+    },
+    {
+      "id": "transaction",
+      "kind": "task",
+      "name": "Write atomically",
+      "description": "Update assignment and append activity in one PostgreSQL transaction.",
+      "drillTo": "data"
+    },
+    {
+      "id": "notify",
+      "kind": "task",
+      "name": "After commit",
+      "description": "Invalidate dashboard cache and publish a transient notification."
+    },
+    {
+      "id": "done",
+      "kind": "event",
+      "name": "Return result",
+      "description": "Clients refetch authorized data."
+    },
+    {
+      "id": "portfolio-model-studio",
+      "kind": "system",
+      "name": "Model Studio",
+      "description": "Architecture diagram constructor: shared models, editable views, and drill-down."
+    },
+    {
+      "id": "portfolio-model-studio-user",
+      "kind": "person",
+      "name": "Model author",
+      "description": "Creates and explores architecture models."
+    },
+    {
+      "id": "portfolio-orders-lab",
+      "kind": "system",
+      "name": "Orders Lab",
+      "description": "Order workflow learning example. A comparison experience within Fieldwork, not a separately deployed service."
+    },
+    {
+      "id": "portfolio-orders-lab-user",
+      "kind": "person",
+      "name": "Lab learner",
+      "description": "Explores the original order workflow example."
+    },
+    {
+      "id": "next-orders-page-component",
+      "kind": "component",
+      "name": "/orders-lab",
+      "description": "Server page entry + client OrdersLab; business data fetched after mount"
+    },
+    {
+      "id": "next-guide-page-component",
+      "kind": "component",
+      "name": "/guide",
+      "description": "Server Component with static content; no page-owned Client Component"
+    }
+  ],
+  "relations": [
+    {
+      "id": "r0",
+      "source": "member",
+      "target": "fieldwork",
+      "label": "Uses"
+    },
+    {
+      "id": "r1",
+      "source": "fieldwork",
+      "target": "sentry",
+      "label": "Reports unexpected errors"
+    },
+    {
+      "id": "r2",
+      "source": "web",
+      "target": "api",
+      "label": "GraphQL / WebSocket"
+    },
+    {
+      "id": "r3",
+      "source": "api",
+      "target": "postgres",
+      "label": "Prisma reads & transactions"
+    },
+    {
+      "id": "r4",
+      "source": "api",
+      "target": "redis",
+      "label": "Cache & Pub/Sub"
+    },
+    {
+      "id": "r5",
+      "source": "api",
+      "target": "sentry",
+      "label": "Reports errors"
+    },
+    {
+      "id": "r6",
+      "source": "resolver",
+      "target": "usecase",
+      "label": "Delegates"
+    },
+    {
+      "id": "r7",
+      "source": "usecase",
+      "target": "policy",
+      "label": "Authorizes"
+    },
+    {
+      "id": "r8",
+      "source": "usecase",
+      "target": "rules",
+      "label": "Validates state"
+    },
+    {
+      "id": "r9",
+      "source": "capabilities",
+      "target": "policy",
+      "label": "Derives permissions"
+    },
+    {
+      "id": "r10",
+      "source": "capabilities",
+      "target": "rules",
+      "label": "Checks state"
+    },
+    {
+      "id": "r11",
+      "source": "resolver",
+      "target": "query",
+      "label": "Queries"
+    },
+    {
+      "id": "r12",
+      "source": "project",
+      "target": "assignment",
+      "label": "1 → many"
+    },
+    {
+      "id": "r13",
+      "source": "assignment",
+      "target": "comment",
+      "label": "1 → many"
+    },
+    {
+      "id": "r14",
+      "source": "page",
+      "target": "workspace",
+      "label": "Renders"
+    },
+    {
+      "id": "r15",
+      "source": "workspace",
+      "target": "detail",
+      "label": "Renders"
+    },
+    {
+      "id": "r16",
+      "source": "detail",
+      "target": "complete",
+      "label": "Renders"
+    },
+    {
+      "id": "r17",
+      "source": "complete",
+      "target": "capabilities",
+      "label": "Uses canComplete"
+    },
+    {
+      "id": "r18",
+      "source": "start",
+      "target": "load",
+      "label": "Request"
+    },
+    {
+      "id": "r19",
+      "source": "load",
+      "target": "check",
+      "label": "Scoped record"
+    },
+    {
+      "id": "r20",
+      "source": "check",
+      "target": "transaction",
+      "label": "Yes"
+    },
+    {
+      "id": "r21",
+      "source": "check",
+      "target": "reject",
+      "label": "No"
+    },
+    {
+      "id": "r22",
+      "source": "transaction",
+      "target": "notify",
+      "label": "Commit"
+    },
+    {
+      "id": "r23",
+      "source": "notify",
+      "target": "done",
+      "label": "Respond"
+    },
+    {
+      "id": "portfolio-model-studio-uses",
+      "source": "portfolio-model-studio-user",
+      "target": "portfolio-model-studio",
+      "label": "Uses"
+    },
+    {
+      "id": "portfolio-orders-lab-uses",
+      "source": "portfolio-orders-lab-user",
+      "target": "portfolio-orders-lab",
+      "label": "Uses"
+    }
+  ],
+  "views": [
+    {
+      "id": "service-landscape",
+      "name": "Product landscape",
+      "template": "C0",
+      "objectIds": [
+        "fieldwork",
+        "portfolio-model-studio",
+        "portfolio-orders-lab"
+      ],
+      "drillTargets": {
+        "fieldwork": "context",
+        "portfolio-model-studio": "portfolio-model-studio-context",
+        "portfolio-orders-lab": "portfolio-orders-lab-context"
+      },
+      "positions": {
+        "fieldwork": {
+          "x": 0,
+          "y": 0
+        },
+        "portfolio-model-studio": {
+          "x": 390,
+          "y": 0
+        },
+        "portfolio-orders-lab": {
+          "x": 780,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": "context",
+      "name": "System context",
+      "template": "C1",
+      "objectIds": [
+        "member",
+        "fieldwork",
+        "sentry"
+      ],
+      "positions": {
+        "member": {
+          "x": 0,
+          "y": 0
+        },
+        "fieldwork": {
+          "x": 350,
+          "y": 0
+        },
+        "sentry": {
+          "x": 700,
+          "y": 0
+        }
+      },
+      "parentViewId": "service-landscape",
+      "ownerObjectId": "fieldwork"
+    },
+    {
+      "id": "containers",
+      "name": "Fieldwork containers",
+      "template": "C2",
+      "objectIds": [
+        "web",
+        "api",
+        "postgres",
+        "redis",
+        "sentry"
+      ],
+      "positions": {
+        "web": {
+          "x": 0,
+          "y": 0
+        },
+        "api": {
+          "x": 350,
+          "y": 0
+        },
+        "postgres": {
+          "x": 700,
+          "y": 0
+        },
+        "redis": {
+          "x": 0,
+          "y": 270
+        },
+        "sentry": {
+          "x": 350,
+          "y": 270
+        }
+      },
+      "parentViewId": "context",
+      "ownerObjectId": "fieldwork",
+      "drillTargets": {
+        "web": "next-workspace-page"
+      }
+    },
+    {
+      "id": "components",
+      "name": "API components",
+      "template": "C3",
+      "objectIds": [
+        "resolver",
+        "usecase",
+        "policy",
+        "rules",
+        "query",
+        "capabilities"
+      ],
+      "positions": {
+        "resolver": {
+          "x": 0,
+          "y": 0
+        },
+        "usecase": {
+          "x": 350,
+          "y": 0
+        },
+        "policy": {
+          "x": 700,
+          "y": 0
+        },
+        "rules": {
+          "x": 0,
+          "y": 270
+        },
+        "query": {
+          "x": 350,
+          "y": 270
+        },
+        "capabilities": {
+          "x": 700,
+          "y": 270
+        }
+      },
+      "parentViewId": "containers",
+      "ownerObjectId": "api"
+    },
+    {
+      "id": "frontend",
+      "name": "Frontend components",
+      "template": "C3",
+      "objectIds": [
+        "page",
+        "workspace",
+        "detail",
+        "complete",
+        "capabilities"
+      ],
+      "positions": {
+        "page": {
+          "x": 0,
+          "y": 0
+        },
+        "workspace": {
+          "x": 350,
+          "y": 0
+        },
+        "detail": {
+          "x": 700,
+          "y": 0
+        },
+        "complete": {
+          "x": 0,
+          "y": 270
+        },
+        "capabilities": {
+          "x": 350,
+          "y": 270
+        }
+      },
+      "parentViewId": "containers",
+      "ownerObjectId": "web"
+    },
+    {
+      "id": "data",
+      "name": "Workspace data",
+      "template": "ERD",
+      "objectIds": [
+        "project",
+        "assignment",
+        "comment",
+        "activity"
+      ],
+      "positions": {
+        "project": {
+          "x": 0,
+          "y": 0
+        },
+        "assignment": {
+          "x": 350,
+          "y": 0
+        },
+        "comment": {
+          "x": 700,
+          "y": 0
+        },
+        "activity": {
+          "x": 0,
+          "y": 270
+        }
+      },
+      "parentViewId": "containers",
+      "ownerObjectId": "postgres"
+    },
+    {
+      "id": "process",
+      "name": "Change assignment status",
+      "template": "BPMN",
+      "objectIds": [
+        "start",
+        "load",
+        "check",
+        "transaction",
+        "notify",
+        "done",
+        "reject"
+      ],
+      "positions": {
+        "start": {
+          "x": 0,
+          "y": 0
+        },
+        "load": {
+          "x": 350,
+          "y": 0
+        },
+        "check": {
+          "x": 700,
+          "y": 0
+        },
+        "transaction": {
+          "x": 0,
+          "y": 270
+        },
+        "notify": {
+          "x": 350,
+          "y": 270
+        },
+        "done": {
+          "x": 700,
+          "y": 270
+        },
+        "reject": {
+          "x": 0,
+          "y": 540
+        }
+      },
+      "parentViewId": "components",
+      "ownerObjectId": "usecase"
+    },
+    {
+      "id": "portfolio-model-studio-context",
+      "name": "Model Studio context",
+      "template": "C1",
+      "parentViewId": "service-landscape",
+      "ownerObjectId": "portfolio-model-studio",
+      "objectIds": [
+        "portfolio-model-studio-user",
+        "portfolio-model-studio"
+      ],
+      "positions": {
+        "portfolio-model-studio-user": {
+          "x": 0,
+          "y": 80
+        },
+        "portfolio-model-studio": {
+          "x": 400,
+          "y": 80
+        }
+      }
+    },
+    {
+      "id": "portfolio-orders-lab-context",
+      "name": "Orders Lab context",
+      "template": "C1",
+      "parentViewId": "service-landscape",
+      "ownerObjectId": "portfolio-orders-lab",
+      "objectIds": [
+        "portfolio-orders-lab-user",
+        "portfolio-orders-lab"
+      ],
+      "positions": {
+        "portfolio-orders-lab-user": {
+          "x": 0,
+          "y": 80
+        },
+        "portfolio-orders-lab": {
+          "x": 400,
+          "y": 80
+        }
+      }
+    },
+    {
+      "id": "next-workspace-page",
+      "name": "Workspace · /",
+      "template": "NEXT",
+      "objectIds": [
+        "page",
+        "workspace",
+        "detail",
+        "complete",
+        "capabilities"
+      ],
+      "positions": {
+        "page": {
+          "x": 0,
+          "y": 0
+        },
+        "workspace": {
+          "x": 350,
+          "y": 0
+        },
+        "detail": {
+          "x": 700,
+          "y": 0
+        },
+        "complete": {
+          "x": 0,
+          "y": 270
+        },
+        "capabilities": {
+          "x": 350,
+          "y": 270
+        }
+      },
+      "parentViewId": "containers",
+      "ownerObjectId": "web",
+      "pageSpec": {
+        "route": "/",
+        "rendering": "Server page entry + hydrated Client Components",
+        "revalidation": "No explicit ISR interval or route revalidation configured. Static shell eligibility inferred from source; deployment rendering not verified.",
+        "dataLoading": "Workspace data loads client-side after mount; no server-side workspace fetch in page.tsx.",
+        "sections": {
+          "Components": [
+            {
+              "name": "Page → Workspace",
+              "detail": "Server page composes the client entry. No props passed.",
+              "sources": [
+                {
+                  "path": "apps/web/src/app/page.tsx",
+                  "symbol": "Page"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "Workspace"
+                }
+              ]
+            },
+            {
+              "name": "Workspace → WorkspaceSession",
+              "detail": "Props: actor:string, setActor callback. key={actor} remounts the session and resets its state when identity changes.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "WorkspaceSession"
+                }
+              ]
+            },
+            {
+              "name": "WorkspaceSession → AssignmentDetail",
+              "detail": "Props: assignment, data, actor, refresh, onClose. Rendered for the selected assignment. Owns comments, comment draft, busy and error state.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "WorkspaceSession"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/components/assignment-detail.tsx",
+                  "symbol": "AssignmentDetail"
+                }
+              ]
+            },
+            {
+              "name": "WorkspaceSession → CreateAssignment",
+              "detail": "Props: data, actor, onClose, onDone. Shown when creating is true. Submission refreshes workspace data.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "WorkspaceSession"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/components/create-assignment.tsx",
+                  "symbol": "CreateAssignment"
+                }
+              ]
+            }
+          ],
+          "Permissions": [
+            {
+              "name": "Complete / start assignment",
+              "detail": "Server-provided canComplete / canStart disable actions; completeReason / startReason explain why. busy also disables action. Backend rechecks authorization and state.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "WorkspaceSession"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/graphql/workspace.operations.ts",
+                  "symbol": "WORKSPACE"
+                }
+              ],
+              "target": "process"
+            },
+            {
+              "name": "Create and assign",
+              "detail": "workspaceViewer.canCreate gates New assignment. canManage controls available assignees in the creation form.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "WorkspaceSession"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/components/create-assignment.tsx",
+                  "symbol": "CreateAssignment"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/graphql/workspace.operations.ts",
+                  "symbol": "WORKSPACE"
+                }
+              ]
+            },
+            {
+              "name": "Comment",
+              "detail": "assignment.capabilities.canComment disables editor and submit. Busy and an empty body also disable submission.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/assignment-detail.tsx",
+                  "symbol": "AssignmentDetail"
+                }
+              ]
+            }
+          ],
+          "API & triggers": [
+            {
+              "name": "Mount / filter change → Workspace query → data",
+              "detail": "actor, projectId, status or search change schedules a query after 100ms. Previous effect aborts. In-flight refreshes coalesce into one follow-up.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/hooks/use-workspace.ts",
+                  "symbol": "useWorkspace"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/graphql/workspace.operations.ts",
+                  "symbol": "WORKSPACE"
+                }
+              ]
+            },
+            {
+              "name": "Complete / Start click → mutation → refresh",
+              "detail": "Set busy; send id; on success refetch workspace; surface actionError on failure; clear busy in finally. No optimistic update.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "WorkspaceSession"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/graphql/workspace.operations.ts",
+                  "symbol": "COMPLETE"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/graphql/workspace.operations.ts",
+                  "symbol": "START"
+                }
+              ],
+              "target": "process"
+            },
+            {
+              "name": "Open detail / data change → Comments query",
+              "detail": "Effect depends on actor, assignment.id and data. Cleanup aborts the previous request.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/assignment-detail.tsx",
+                  "symbol": "AssignmentDetail"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/graphql/workspace.operations.ts",
+                  "symbol": "COMMENTS"
+                }
+              ]
+            },
+            {
+              "name": "Submit forms → Create / Comment → refresh",
+              "detail": "Mutations run on submission. Comment clears its draft after success. Creation invokes onDone. Requests POST to /graphql through the Next.js rewrite.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/graphql/workspace.operations.ts",
+                  "symbol": "CREATE"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/graphql/workspace.operations.ts",
+                  "symbol": "COMMENT"
+                },
+                {
+                  "path": "apps/web/src/lib/graphql/client.ts",
+                  "symbol": "request"
+                }
+              ]
+            }
+          ],
+          "State & cache": [
+            {
+              "name": "Local state ownership",
+              "detail": "Workspace owns actor. WorkspaceSession owns project, status, search, selected, creating, busy, actionError and inspect. Filters are local, not URL state.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "WorkspaceSession"
+                }
+              ]
+            },
+            {
+              "name": "Remote data in React state",
+              "detail": "useWorkspace owns data, error, connection and lastEvent. Custom fetch hook; no React Query / SWR cache or persisted browser store here.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/hooks/use-workspace.ts",
+                  "symbol": "useWorkspace"
+                }
+              ]
+            },
+            {
+              "name": "Next.js vs backend cache",
+              "detail": "No explicit Next.js data-cache policy for workspace data: browser POST requests load it. Dashboard Redis caching is a separate backend concern; organization and permission scope must remain isolated.",
+              "sources": [
+                {
+                  "path": "apps/web/src/app/page.tsx",
+                  "symbol": "Page"
+                },
+                {
+                  "path": "apps/web/src/lib/graphql/client.ts",
+                  "symbol": "request"
+                }
+              ],
+              "target": "containers"
+            }
+          ],
+          "Realtime": [
+            {
+              "name": "Actor → connection → WorkspaceChanges",
+              "detail": "graphql-ws connects with demo actor parameters. One subscription per hook instance; recreated when actor changes. Infinite retry attempts configured.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/hooks/use-workspace.ts",
+                  "symbol": "useWorkspace"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/graphql/workspace.operations.ts",
+                  "symbol": "CHANGES"
+                }
+              ]
+            },
+            {
+              "name": "Event / window focus → 200ms coalescing → refresh",
+              "detail": "Event kind updates lastEvent. Notifications trigger a query rather than patching records. Reconnection recovery depends on server subscription readiness events; this hook has no durable replay.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/hooks/use-workspace.ts",
+                  "symbol": "useWorkspace"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/graphql/workspace.operations.ts",
+                  "symbol": "CHANGES"
+                }
+              ]
+            },
+            {
+              "name": "Unmount / actor switch → cleanup",
+              "detail": "Clear timer, remove focus listener, unsubscribe and dispose socket. Query effect aborts old HTTP request. Connection UI reports Connected / Reconnecting / Unavailable.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/hooks/use-workspace.ts",
+                  "symbol": "useWorkspace"
+                }
+              ]
+            }
+          ],
+          "States & failures": [
+            {
+              "name": "Loading / error / empty / busy",
+              "detail": "Hook starts with null data and exposes error. Components render pending and empty states. Mutations surface errors and clear busy in finally; no optimistic rollback needed.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "WorkspaceSession"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/hooks/use-workspace.ts",
+                  "symbol": "useWorkspace"
+                }
+              ]
+            },
+            {
+              "name": "Identity boundary",
+              "detail": "Changing actor remounts WorkspaceSession, clearing drafts, selection and data. Demo identities are spoofable; these are not production authentication controls.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "WorkspaceSession"
+                }
+              ]
+            }
+          ],
+          "Browser storage": [
+            {
+              "name": "localStorage / sessionStorage: not used",
+              "detail": "Workspace uses memory-only React state. Actor, filters, selection and drafts reset on reload; no storage keys, expiry or cross-tab storage listeners. The separate Model Studio persists its diagram model in localStorage; that is not workspace page behavior.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/workspace/components/workspace.tsx",
+                  "symbol": "WorkspaceSession"
+                },
+                {
+                  "path": "apps/web/src/features/workspace/hooks/use-workspace.ts",
+                  "symbol": "useWorkspace"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "next-orders-page",
+      "name": "Orders Lab · /orders-lab",
+      "template": "NEXT",
+      "objectIds": [
+        "next-orders-page-component"
+      ],
+      "positions": {
+        "next-orders-page-component": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "parentViewId": "containers",
+      "ownerObjectId": "web",
+      "pageSpec": {
+        "route": "/orders-lab",
+        "rendering": "Server page entry + client OrdersLab; business data fetched after mount",
+        "revalidation": "No explicit ISR interval. Browser GraphQL requests use cache: no-store.",
+        "dataLoading": "Two independent effects fetch demo identities and orders. No server data fetch in the page entry.",
+        "sections": {
+          "Components": [
+            {
+              "name": "Page → OrdersLab",
+              "detail": "No props. OrdersLab owns controls, table, create form, response inspector, and learning notes in one file.",
+              "sources": [
+                {
+                  "path": "apps/web/src/app/orders-lab/page.tsx",
+                  "symbol": "Page"
+                },
+                {
+                  "path": "apps/web/src/features/orders/components/orders-lab.tsx",
+                  "symbol": "OrdersLab"
+                }
+              ]
+            }
+          ],
+          "Permissions": [
+            {
+              "name": "Create / cancel / field selection",
+              "detail": "viewer.canCreate shows creation form. cancel.authorized controls button presence; cancel.available and busy disable it; reason explains restrictions. Selecting total requests a field, not permission to read it.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/orders/components/orders-lab.tsx",
+                  "symbol": "OrdersLab"
+                }
+              ]
+            }
+          ],
+          "API & triggers": [
+            {
+              "name": "Mount / retry → demo identities",
+              "detail": "DEMO_USERS runs on mount and identityRetry changes. Cleanup aborts the request.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/orders/components/orders-lab.tsx",
+                  "symbol": "OrdersLab"
+                },
+                {
+                  "path": "apps/web/src/features/orders/api/orders.client.ts",
+                  "symbol": "graphqlRequest"
+                }
+              ]
+            },
+            {
+              "name": "Actor / selected fields / refresh → orders query",
+              "detail": "Effect depends on query, actor and revision. includeTotal changes the generated document. Cleanup aborts stale requests.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/orders/components/orders-lab.tsx",
+                  "symbol": "OrdersLab"
+                },
+                {
+                  "path": "apps/web/src/features/orders/api/orders.client.ts",
+                  "symbol": "graphqlRequest"
+                }
+              ]
+            },
+            {
+              "name": "Create / cancel → mutation → refetch",
+              "detail": "runMutation sets busy, records the response, and refetches only when the GraphQL envelope has no errors. No optimistic update.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/orders/components/orders-lab.tsx",
+                  "symbol": "OrdersLab"
+                },
+                {
+                  "path": "apps/web/src/features/orders/api/orders.client.ts",
+                  "symbol": "graphqlRequest"
+                }
+              ]
+            }
+          ],
+          "State & cache": [
+            {
+              "name": "Local state + uncached requests",
+              "detail": "actor, includeTotal, identities, result, revision, busy, error, mutation, title and identityRetry live in OrdersLab React state. No query cache library. graphqlRequest explicitly sets no-store.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/orders/components/orders-lab.tsx",
+                  "symbol": "OrdersLab"
+                },
+                {
+                  "path": "apps/web/src/features/orders/api/orders.client.ts",
+                  "symbol": "graphqlRequest"
+                }
+              ]
+            }
+          ],
+          "Browser storage": [
+            {
+              "name": "localStorage / sessionStorage: not used",
+              "detail": "No browser storage reads or writes in this page. Identity, selected fields and form draft reset on remount/reload. No keys, TTL, migration or cross-tab storage listeners.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/orders/components/orders-lab.tsx",
+                  "symbol": "OrdersLab"
+                }
+              ]
+            }
+          ],
+          "Realtime": [],
+          "States & failures": [
+            {
+              "name": "HTTP and GraphQL errors",
+              "detail": "HTTP 200 can contain GraphQL errors. The client preserves the envelope for inspection. Mutation refresh is skipped on GraphQL errors; busy resets in finally. Aborted effects do not show errors.",
+              "sources": [
+                {
+                  "path": "apps/web/src/features/orders/components/orders-lab.tsx",
+                  "symbol": "OrdersLab"
+                },
+                {
+                  "path": "apps/web/src/features/orders/api/orders.client.ts",
+                  "symbol": "graphqlRequest"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "next-guide-page",
+      "name": "Code guide · /guide",
+      "template": "NEXT",
+      "objectIds": [
+        "next-guide-page-component"
+      ],
+      "positions": {
+        "next-guide-page-component": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "parentViewId": "containers",
+      "ownerObjectId": "web",
+      "pageSpec": {
+        "route": "/guide",
+        "rendering": "Server Component with static content; no page-owned Client Component",
+        "revalidation": "No data fetching or explicit revalidation policy. Static-render eligibility inferred from source, not verified against deployment output.",
+        "dataLoading": "Content is defined in the route file. No page-owned API requests.",
+        "sections": {
+          "Components": [
+            {
+              "name": "Guide → static content + navigation",
+              "detail": "One server component renders the learning guide and a Next.js Link to /. No business props or client state.",
+              "sources": [
+                {
+                  "path": "apps/web/src/app/guide/page.tsx",
+                  "symbol": "Guide"
+                }
+              ]
+            }
+          ],
+          "Permissions": [],
+          "API & triggers": [],
+          "State & cache": [
+            {
+              "name": "Static content",
+              "detail": "No page-owned React state or remote-data cache. Updating the guide requires changing source and rebuilding.",
+              "sources": [
+                {
+                  "path": "apps/web/src/app/guide/page.tsx",
+                  "symbol": "Guide"
+                }
+              ]
+            }
+          ],
+          "Browser storage": [
+            {
+              "name": "localStorage / sessionStorage: not used",
+              "detail": "This page does not persist browser data. No keys, expiry, hydration synchronization or storage event listeners.",
+              "sources": [
+                {
+                  "path": "apps/web/src/app/guide/page.tsx",
+                  "symbol": "Guide"
+                }
+              ]
+            }
+          ],
+          "Realtime": [],
+          "States & failures": []
+        }
+      }
+    }
+  ],
+  "hierarchyVersion": 1,
+  "productLandscapeVersion": 1,
+  "nextPageVersion": 1,
+  "pageExamplesVersion": 1
+}

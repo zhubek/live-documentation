@@ -1,0 +1,15 @@
+node_modules/
+dist/
+
+.next/
+data/
+.env*
+!.env.example
+
+.local-smoke/
+
+.local/
+*.log
+*.tsbuildinfo
+*.sqlite*
+*.db
