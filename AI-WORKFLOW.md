@@ -7,9 +7,12 @@ The Studio is the shared architecture/documentation model. Read it before produc
 Use Node 24+. Provide `STUDIO_URL` and the existing shared `STUDIO_PASSWORD` through the environment. Do not include credentials in a prompt, command-line argument, proposal JSON, source file, or Git commit. There is no new token or public write endpoint.
 
 ```sh
+mkdir -p .local
 node studio-client.mjs pull .local/studio-base.json
 node studio-client.mjs schema .local/studio-schema.json
 ```
+
+On PowerShell, create the folder with `New-Item -ItemType Directory -Force .local`. Keep these private working files out of Git. See the [API reference](docs/api.md) for model structure, errors, and limits.
 
 Pull returns `{model, revision, updatedAt}`. The client refuses to overwrite existing files: use a new filename for each work session. Read the relevant objects, views, component contracts, operations, policies and source references. Check their source revision before relying on them. If implementation and documentation disagree, inspect the source and make the discrepancy explicit.
 
